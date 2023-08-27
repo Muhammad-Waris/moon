@@ -1,3 +1,7 @@
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -39,6 +43,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _showSnackbar('Please fill in all fields.');
       return;
     }
+    if (imageFile == null) {
+      _showSnackbar('Please select an image.');
+      return;
+    }
 
     try {
       setState(() {
@@ -53,18 +61,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       final String uid = userCredential.user!.uid;
 
-      // Save user data to Firestore
-      await FirebaseFirestore.instance.collection('users').doc(uid).set({
-        'fullName': fullName,
-        'username': username,
-        'email': email,
-        "uid":uid,
-      });
+      if (imageFile != null) {
+        final Reference storageRef =
+            FirebaseStorage.instance.ref().child('profile_images/$uid.jpg');
+        final UploadTask uploadTask = storageRef.putFile(imageFile!);
+        await uploadTask.whenComplete(() async {
+          final String imageUrl = await storageRef.getDownloadURL();
+          await FirebaseFirestore.instance.collection('users').doc(uid).set({
+            'fullName': fullName,
+            'username': username,
+            'email': email,
+            'uid': uid,
+            'imageUrl': imageUrl, // Store the image URL in Firestore
+          });
+        });
+      } else {
+        await FirebaseFirestore.instance.collection('users').doc(uid).set({
+          'fullName': fullName,
+          'username': username,
+          'email': email,
+          'uid': uid,
+        });
+      }
 
       _showSnackbar('User registered successfully.');
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => LandingPage()),
+        MaterialPageRoute(builder: (context) => const LandingPage()),
       );
     } on FirebaseAuthException catch (e) {
       String errorMessage = 'An error occurred. Please try again later.';
@@ -147,6 +170,53 @@ class _RegisterScreenState extends State<RegisterScreen> {
             children: [
               const SizedBox(
                 height: 10,
+              ),
+              Center(
+                child: SizedBox(
+                  height: 115,
+                  width: 115,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    fit: StackFit.expand,
+                    children: [
+                      CircleAvatar(
+                        radius: 0.0,
+                        backgroundColor: Colors.grey[300],
+                        backgroundImage: (imageFile != null)
+                            ? Image.file(
+                                imageFile!,
+                                fit: BoxFit.cover,
+                              ).image
+                            : const AssetImage("assets/pic.png"),
+                      ),
+                      Positioned(
+                        right: -16,
+                        bottom: 0,
+                        child: SizedBox(
+                          height: 46,
+                          width: 46,
+                          child: GestureDetector(
+                            onTap: getImage,
+                            child: Center(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(50),
+                                    color: Colors.white),
+                                child: const Padding(
+                                  padding: EdgeInsets.all(5.0),
+                                  child: Icon(
+                                    Icons.add_a_photo,
+                                    color: AppColors.primaryColor,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
               AppInputField(
                 hintText: "Full Name",
@@ -238,5 +308,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       ),
     );
+  }
+
+  File? imageFile;
+
+  Future getImage() async {
+    FilePickerResult? result =
+        await FilePicker.platform.pickFiles(type: FileType.image);
+
+    if (result != null) {
+      setState(() {
+        imageFile = File(result.files.single.path!);
+      });
+    }
   }
 }

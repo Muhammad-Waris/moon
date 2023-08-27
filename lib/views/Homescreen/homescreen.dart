@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -58,6 +59,9 @@ class _HomeScreen1State extends State<HomeScreen1> {
 
   @override
   Widget build(BuildContext context) {
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    CollectionReference usersCollection =
+        FirebaseFirestore.instance.collection('users');
     return Scaffold(
       backgroundColor: AppColors.botoombackColor,
       appBar: AppBar(
@@ -193,25 +197,52 @@ class _HomeScreen1State extends State<HomeScreen1> {
 
                           return Column(
                             children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Image.asset(
-                                        "assets/tikprofile.png",
-                                        height: 45,
-                                        width: 45,
-                                      ),
-                                      const SizedBox(
-                                        width: 22,
-                                      ),
-                                      const AppText(text: "Luqman"),
-                                    ],
-                                  ),
-                                ],
+                              const SizedBox(
+                                height: 11,
                               ),
+                              StreamBuilder<DocumentSnapshot>(
+                                  stream: usersCollection
+                                      .doc(currentUser!.uid)
+                                      .snapshots(),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.hasData) {
+                                      var userData = snapshot.data!.data()
+                                          as Map<String, dynamic>;
+                                      String name = userData['fullName'] ?? '';
+                                      String imgUrl =
+                                          userData['imageUrl'] ?? '';
+                                      return Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(44),
+                                                child: Image.network(
+                                                  imgUrl,
+                                                  height: 45,
+                                                  width: 45,
+                                                  fit: BoxFit.cover,
+                                                ),
+                                              ),
+                                              const SizedBox(
+                                                width: 22,
+                                              ),
+                                              AppText(text: name),
+                                            ],
+                                          ),
+                                        ],
+                                      );
+                                    } else if (snapshot.hasError) {
+                                      return Center(
+                                        child: Text('Error: ${snapshot.error}'),
+                                      );
+                                    } else {
+                                      return const CircularProgressIndicator();
+                                    }
+                                  }),
                               const SizedBox(
                                 height: 22,
                               ),
