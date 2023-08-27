@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:moon/views/Homescreen/post/post_picture.dart';
 import 'package:moon/views/Homescreen/post/post_video.dart';
 import 'package:moon/views/profile/profile2.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../constants/appcolors.dart';
 import '../../constants/apppadding.dart';
 import '../../constants/svgicons.dart';
@@ -47,7 +48,13 @@ class _HomeScreen1State extends State<HomeScreen1> {
     });
   }
 
-  List<String> _comments = [];
+  bool _isFavorite = false;
+
+  void _toggleFavorite() {
+    setState(() {
+      _isFavorite = !_isFavorite;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -234,21 +241,36 @@ class _HomeScreen1State extends State<HomeScreen1> {
                               const SizedBox(
                                 height: 10,
                               ),
-                              const Row(
+                              Row(
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
-                                  Icon(
-                                    Icons.share,
-                                    color: Colors.white,
+                                  GestureDetector(
+                                    onTap: () async {
+                                      await Share.share("This is lit");
+                                    },
+                                    child: const Icon(
+                                      Icons.share,
+                                      color: Colors.white,
+                                    ),
                                   ),
-                                  SizedBox(
+                                  const SizedBox(
                                     width: 15,
                                   ),
-                                  Icon(
-                                    Icons.favorite_border,
-                                    color: Colors.white,
+                                  GestureDetector(
+                                    onTap: () {
+                                      _toggleFavorite();
+                                    },
+                                    child: Icon(
+                                      _isFavorite
+                                          ? Icons.favorite
+                                          : Icons.favorite_border,
+                                      color: _isFavorite
+                                          ? Colors.red
+                                          : Colors.white,
+                                      size: 24.0,
+                                    ),
                                   ),
-                                  SizedBox(
+                                  const SizedBox(
                                     width: 15,
                                   ),
                                 ],
@@ -263,52 +285,6 @@ class _HomeScreen1State extends State<HomeScreen1> {
                               ),
                               const SizedBox(
                                 height: 20,
-                              ),
-                              ListView.builder(
-                                shrinkWrap: true,
-                                itemCount: _comments.length,
-                                itemBuilder: (context, index) {
-                                  final comment = _comments[index];
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 22, vertical: 8),
-                                    child: AppText(
-                                      text: comment,
-                                      color: Colors.white,
-                                    ),
-                                  );
-                                },
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 22),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: AppInputField(
-                                        controller: _commentController,
-                                        hintText: 'Add a comment',
-                                        suffixIcon: GestureDetector(
-                                          onTap: () {
-                                            if (_commentController
-                                                .text.isNotEmpty) {
-                                              setState(() {
-                                                _comments.add(
-                                                    _commentController.text);
-                                                _commentController.clear();
-                                              });
-                                              // Add code to save comment to Firestore
-                                            }
-                                          },
-                                          child: const Icon(
-                                            Icons.send,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
                               ),
                             ],
                           );
