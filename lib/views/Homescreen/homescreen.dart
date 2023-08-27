@@ -306,17 +306,37 @@ class _HomeScreen1State extends State<HomeScreen1> {
                                   ),
                                 ],
                               ),
-                              const Padding(
-                                padding: EdgeInsets.only(left: 22),
-                                child: Row(
-                                  children: [
-                                    AppText(text: "Luqman"),
-                                  ],
-                                ),
-                              ),
+                              StreamBuilder<DocumentSnapshot>(
+                                  stream: usersCollection
+                                      .doc(currentUser.uid)
+                                      .snapshots(),
+                                  builder: (context, snapshot) {
+                                    var userData = snapshot.data!.data()
+                                        as Map<String, dynamic>;
+                                    String name = userData['fullName'] ?? '';
+                                    return Padding(
+                                      padding: const EdgeInsets.only(left: 22),
+                                      child: Row(
+                                        children: [
+                                          AppText(text: name),
+                                        ],
+                                      ),
+                                    );
+                                  }),
                               const SizedBox(
-                                height: 20,
+                                height: 1,
                               ),
+                              const Row(
+                                children: [
+                                  SizedBox(
+                                    width: 20,
+                                  ),
+                                  AppText(
+                                    text: "See all comments",
+                                    fontSize: 10,
+                                  ),
+                                ],
+                              )
                             ],
                           );
                         }).toList(),
@@ -386,8 +406,6 @@ class _HomeScreen1State extends State<HomeScreen1> {
               const SizedBox(
                 height: 11,
               ),
-              Image.asset("assets/post.png"),
-              Image.asset("assets/post2.png"),
             ],
           ),
         ),
