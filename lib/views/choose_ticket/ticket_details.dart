@@ -8,9 +8,21 @@ import '../../constants/svgicons.dart';
 import '../../widgets/app_text.dart';
 import 'events/event1.dart';
 
-class TicketDetails extends StatelessWidget {
-  const TicketDetails({super.key});
+class TicketDetails extends StatefulWidget {
+  final Map<String, dynamic> eventData;
+  final double totalAmount;
 
+  const TicketDetails({
+    super.key,
+    required this.eventData,
+    required this.totalAmount,
+  });
+
+  @override
+  State<TicketDetails> createState() => _TicketDetailsState();
+}
+
+class _TicketDetailsState extends State<TicketDetails> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,8 +75,8 @@ class TicketDetails extends StatelessWidget {
                     text: "Event",
                     fontSize: 13,
                   ),
-                  const AppText(
-                    text: "The San Francisco Fall Show 2019",
+                  AppText(
+                    text: widget.eventData['eventName'],
                     fontSize: 17,
                   ),
                   const AppText(
@@ -78,12 +90,12 @@ class TicketDetails extends StatelessWidget {
                     text: "Date & Time",
                     fontSize: 13,
                   ),
-                  const AppText(
-                    text: "Monday, October 24",
+                  AppText(
+                    text: widget.eventData['date'],
                     fontSize: 17,
                   ),
-                  const AppText(
-                    text: "6:00PM - 8:00PM",
+                  AppText(
+                    text: widget.eventData['time'],
                     fontSize: 13,
                   ),
                   const SizedBox(
@@ -92,27 +104,27 @@ class TicketDetails extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Column(
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          AppText(
+                          const AppText(
                             text: "Location",
                             fontSize: 13,
                           ),
                           AppText(
-                            text: "Fort Mason Center",
+                            text: widget.eventData['location'],
                             fontSize: 17,
                           ),
-                          AppText(
+                          const AppText(
                             text: "Festival Pavilion, San Francisco, CA",
                             fontSize: 13,
                           ),
                         ],
                       ),
-                      Image.asset(
-                        "assets/Map.png",
-                        width: MediaQuery.of(context).size.width * 0.15,
-                      )
+                      // Image.asset(
+                      //   "assets/Map.png",
+                      //   width: MediaQuery.of(context).size.width * 0.15,
+                      // )
                     ],
                   ),
                   const SizedBox(
@@ -126,9 +138,17 @@ class TicketDetails extends StatelessWidget {
                     text: "Presale Ticket",
                     fontSize: 17,
                   ),
-                  const AppText(
-                    text: "Sales end on Sep 13, 2019",
-                    fontSize: 13,
+                  Row(
+                    children: [
+                      const AppText(
+                        text: "Sales end on ",
+                        fontSize: 13,
+                      ),
+                      AppText(
+                        text: widget.eventData['dateRange'],
+                        fontSize: 13,
+                      ),
+                    ],
                   ),
                   const SizedBox(
                     height: 25,
@@ -137,8 +157,8 @@ class TicketDetails extends StatelessWidget {
                     text: "Price",
                     fontSize: 13,
                   ),
-                  const AppText(
-                    text: "\$30.36",
+                  AppText(
+                    text: "\$${widget.totalAmount.toStringAsFixed(2)}",
                     fontSize: 17,
                   ),
                   const AppText(
@@ -162,7 +182,10 @@ class TicketDetails extends StatelessWidget {
                     onTap: () {
                       Navigator.push(context,
                           MaterialPageRoute(builder: (context) {
-                        return const Event01();
+                        return Event01(
+                          eventData: widget.eventData,
+                          totalAmount: widget.totalAmount,
+                        );
                       }));
                     },
                   ),

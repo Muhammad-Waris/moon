@@ -162,7 +162,10 @@ class TicketDetails1 extends StatelessWidget {
                     onTap: () {
                       Navigator.push(context,
                           MaterialPageRoute(builder: (context) {
-                        return const PaymentMethods();
+                        return const PaymentMethods(
+                          eventData: {},
+                          totalAmount: 4,
+                        );
                       }));
                     },
                   ),

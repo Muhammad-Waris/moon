@@ -6,9 +6,17 @@ import '../../constants/appcolors.dart';
 import '../../constants/svgicons.dart';
 import '../../widgets/app_text.dart';
 
-class Tickets extends StatelessWidget {
-  const Tickets({super.key});
+class Tickets extends StatefulWidget {
+  final List<Map<String, dynamic>> adminData;
+  final double totalAmount;
+  const Tickets(
+      {super.key, required this.adminData, required this.totalAmount});
 
+  @override
+  State<Tickets> createState() => _TicketsState();
+}
+
+class _TicketsState extends State<Tickets> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -69,88 +77,104 @@ class Tickets extends StatelessWidget {
             ),
             Column(
               children: List.generate(
-                  4,
-                  (index) => GestureDetector(
-                      onTap: () {
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (context) {
-                          return const TicketDetails();
-                        }));
-                      },
-                      child: const TicketsWidget())),
+                widget.adminData.length,
+                (index) {
+                  Map<String, dynamic> eventData = widget.adminData[index];
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) {
+                          return TicketDetails(
+                            eventData: eventData,
+                            totalAmount: widget.totalAmount,
+                          );
+                        }),
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                          left: 17, right: 17, bottom: 12),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(20),
+                                child: Image.network(
+                                  eventData[
+                                      'imageUrl'], // Use the imageUrl from adminData
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.25,
+                                  height: 110,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              const SizedBox(
+                                width: 10,
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      AppText(
+                                        text: eventData['time'],
+                                        fontSize: 12,
+                                      ),
+                                      AppText(
+                                        text: eventData['date'],
+                                        fontSize: 12,
+                                      ),
+                                    ],
+                                  ),
+                                  const AppText(
+                                    text: "Open Data Science Conference",
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                  Row(
+                                    children: [
+                                      SvgPicture.string(SvgIcons.drop),
+                                      AppText(
+                                        text: eventData['location'],
+                                        fontSize: 13,
+                                      ),
+                                    ],
+                                  ),
+                                  AppText(
+                                    text:
+                                        '\$${widget.totalAmount.toStringAsFixed(2)}',
+                                    fontSize: 15,
+                                    color: const Color(0xff662FFF),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.59,
+                                child: const Divider(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
             const SizedBox(
               height: 60,
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class TicketsWidget extends StatelessWidget {
-  const TicketsWidget({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 17, right: 17, bottom: 12),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Image.asset(
-                "assets/Image.png",
-                width: MediaQuery.of(context).size.width * 0.25,
-              ),
-              const SizedBox(
-                width: 10,
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const AppText(
-                    text: "Tue, Sep 3",
-                    fontSize: 12,
-                  ),
-                  const AppText(
-                    text: "Open Data Science Conference",
-                    fontSize: 13,
-                    fontWeight: FontWeight.w400,
-                  ),
-                  Row(
-                    children: [
-                      SvgPicture.string(SvgIcons.drop),
-                      const AppText(
-                        text: "Hyatt Regency San Fransf A….",
-                        fontSize: 13,
-                      ),
-                    ],
-                  ),
-                  const AppText(
-                    text: "\$30.36",
-                    fontSize: 15,
-                    color: Color(0xff662FFF),
-                  )
-                ],
-              ),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              SizedBox(
-                width: MediaQuery.of(context).size.width * 0.59,
-                child: const Divider(
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }

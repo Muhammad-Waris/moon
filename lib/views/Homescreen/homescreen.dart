@@ -23,7 +23,9 @@ class _HomeScreen1State extends State<HomeScreen1> {
   final TextEditingController _search = TextEditingController();
   Stream<QuerySnapshot<Map<String, dynamic>>>? _searchQuery;
   String _searchText = '';
-
+  List<String> commentsList = [];
+  bool showAllComments = false;
+  final TextEditingController _commentController = TextEditingController();
   @override
   void dispose() {
     _search.dispose();
@@ -38,22 +40,14 @@ class _HomeScreen1State extends State<HomeScreen1> {
     return snapshot.docs;
   }
 
-  List<String> commentsList = [];
-  bool showAllComments = false;
-  final TextEditingController _commentController = TextEditingController();
-
-  // @override
-  // void disposea() {
-  //   _commentController.dispose();
-  //   super.dispose();
-  // }
-
   void addComment(String comment) {
     setState(() {
       commentsList.add(comment);
       _commentController.clear();
     });
   }
+
+  List<String> _comments = [];
 
   @override
   Widget build(BuildContext context) {
@@ -74,22 +68,6 @@ class _HomeScreen1State extends State<HomeScreen1> {
         actions: [
           Row(
             children: [
-              Container(
-                height: 50,
-                width: 50,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: const Color(0xff1E233A),
-                  ),
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.favorite_border,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
               const SizedBox(
                 width: 11,
               ),
@@ -181,7 +159,7 @@ class _HomeScreen1State extends State<HomeScreen1> {
                           .collection('update')
                           .where('name', isGreaterThanOrEqualTo: _searchText)
                           .where('name',
-                              isLessThanOrEqualTo: _searchText + '\uf8ff')
+                              isLessThanOrEqualTo: '$_searchText\uf8ff')
                           .orderBy('name', descending: false)
                           .snapshots();
                     } else {
@@ -206,7 +184,6 @@ class _HomeScreen1State extends State<HomeScreen1> {
                           final image = data['image'] as String;
                           final text = data['text'] as String;
 
-                          // final timestamp = data['timestamp'] as Timestamp;
                           return Column(
                             children: [
                               Row(
@@ -226,13 +203,6 @@ class _HomeScreen1State extends State<HomeScreen1> {
                                       const AppText(text: "Luqman"),
                                     ],
                                   ),
-                                  GestureDetector(
-                                    onTap: () {},
-                                    child: const Icon(
-                                      Icons.more_horiz,
-                                      color: Colors.white,
-                                    ),
-                                  )
                                 ],
                               ),
                               const SizedBox(
@@ -262,7 +232,26 @@ class _HomeScreen1State extends State<HomeScreen1> {
                                 ),
                               ),
                               const SizedBox(
-                                height: 30,
+                                height: 10,
+                              ),
+                              const Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Icon(
+                                    Icons.share,
+                                    color: Colors.white,
+                                  ),
+                                  SizedBox(
+                                    width: 15,
+                                  ),
+                                  Icon(
+                                    Icons.favorite_border,
+                                    color: Colors.white,
+                                  ),
+                                  SizedBox(
+                                    width: 15,
+                                  ),
+                                ],
                               ),
                               const Padding(
                                 padding: EdgeInsets.only(left: 22),
@@ -275,65 +264,52 @@ class _HomeScreen1State extends State<HomeScreen1> {
                               const SizedBox(
                                 height: 20,
                               ),
-                              const Padding(
-                                padding: EdgeInsets.only(left: 22),
+                              ListView.builder(
+                                shrinkWrap: true,
+                                itemCount: _comments.length,
+                                itemBuilder: (context, index) {
+                                  final comment = _comments[index];
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 22, vertical: 8),
+                                    child: AppText(
+                                      text: comment,
+                                      color: Colors.white,
+                                    ),
+                                  );
+                                },
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 22),
                                 child: Row(
                                   children: [
-                                    AppText(
-                                      fontSize: 12,
-                                      text: "See all comments",
-                                      color: Color.fromARGB(255, 223, 222, 222),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(
-                                height: 20,
-                              ),
-                              if (showAllComments)
-                                Column(
-                                  children: [
-                                    ListView.builder(
-                                      shrinkWrap: true,
-                                      itemCount: commentsList.length,
-                                      itemBuilder: (context, index) {
-                                        return ListTile(
-                                          title: AppText(
-                                            text: commentsList[index],
+                                    Expanded(
+                                      child: AppInputField(
+                                        controller: _commentController,
+                                        hintText: 'Add a comment',
+                                        suffixIcon: GestureDetector(
+                                          onTap: () {
+                                            if (_commentController
+                                                .text.isNotEmpty) {
+                                              setState(() {
+                                                _comments.add(
+                                                    _commentController.text);
+                                                _commentController.clear();
+                                              });
+                                              // Add code to save comment to Firestore
+                                            }
+                                          },
+                                          child: const Icon(
+                                            Icons.send,
+                                            color: Colors.white,
                                           ),
-                                        );
-                                      },
-                                    ),
-                                    const SizedBox(height: 20),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 22),
-                                      child: Row(
-                                        children: [
-                                          Expanded(
-                                            child: TextFormField(
-                                              controller: _commentController,
-                                              decoration: InputDecoration(
-                                                hintText: "Add a comment",
-                                                suffixIcon: IconButton(
-                                                  icon: const Icon(Icons.send),
-                                                  onPressed: () {
-                                                    addComment(
-                                                        _commentController
-                                                            .text);
-                                                  },
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
-                              const SizedBox(height: 20),
-                              // AppText(text: timestamp.toDate().toString()),
-                              // Add any additional UI elements or widgets you want to display for each post
+                              ),
                             ],
                           );
                         }).toList(),

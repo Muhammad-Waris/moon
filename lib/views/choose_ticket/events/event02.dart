@@ -1,16 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:moon/constants/apppadding.dart';
+import 'package:moon/views/choose_ticket/earnings/payment_method.dart';
 import 'package:moon/widgets/app_button.dart';
 
 import '../../../constants/appcolors.dart';
 import '../../../constants/svgicons.dart';
 import '../../../widgets/app_text.dart';
-import 'event03.dart';
 
-class Event02 extends StatelessWidget {
-  const Event02({super.key});
+class Event02 extends StatefulWidget {
+  final Map<String, dynamic> eventData;
+  final double totalAmount;
+  const Event02(
+      {super.key, required this.eventData, required this.totalAmount});
 
+  @override
+  State<Event02> createState() => _Event02State();
+}
+
+class _Event02State extends State<Event02> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -210,8 +218,8 @@ class Event02 extends StatelessWidget {
                 text: "Description",
                 fontSize: 13,
               ),
-              const AppText(
-                text: "Optional Details",
+              AppText(
+                text: widget.eventData['desc'],
                 fontSize: 17,
               ),
               const SizedBox(
@@ -219,10 +227,10 @@ class Event02 extends StatelessWidget {
               ),
               SizedBox(
                 width: MediaQuery.of(context).size.width * 0.60,
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
+                    const Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         AppText(
@@ -238,12 +246,12 @@ class Event02 extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        AppText(
+                        const AppText(
                           text: "Price",
                           fontSize: 13,
                         ),
                         AppText(
-                          text: "\$0.0",
+                          text: "\$${widget.totalAmount.toStringAsFixed(2)}",
                           fontSize: 17,
                         )
                       ],
@@ -273,8 +281,8 @@ class Event02 extends StatelessWidget {
                       const SizedBox(
                         width: 5,
                       ),
-                      const AppText(
-                        text: "Sep 21, 2019",
+                      AppText(
+                        text: widget.eventData['date'],
                         fontSize: 17,
                       )
                     ],
@@ -292,8 +300,8 @@ class Event02 extends StatelessWidget {
                         const SizedBox(
                           width: 5,
                         ),
-                        const AppText(
-                          text: "6:00 PM",
+                        AppText(
+                          text: widget.eventData['time'],
                           fontSize: 17,
                         )
                       ],
@@ -323,8 +331,8 @@ class Event02 extends StatelessWidget {
                       const SizedBox(
                         width: 5,
                       ),
-                      const AppText(
-                        text: "Sep 21, 2019",
+                      AppText(
+                        text: widget.eventData['dateRange'],
                         fontSize: 17,
                       )
                     ],
@@ -353,25 +361,6 @@ class Event02 extends StatelessWidget {
               ),
               const SizedBox(
                 height: 30,
-              ),
-              const AppText(
-                text: "Event Category",
-                fontSize: 13,
-              ),
-              const Row(
-                children: [
-                  AppText(
-                    text: "Choose Category",
-                    fontSize: 17,
-                  ),
-                  SizedBox(
-                    width: 12,
-                  ),
-                  Icon(
-                    Icons.keyboard_arrow_down_rounded,
-                    color: Colors.white,
-                  )
-                ],
               ),
               const SizedBox(
                 height: 17,
@@ -417,7 +406,7 @@ class Event02 extends StatelessWidget {
               const SizedBox(
                 height: 20,
               ),
-               Row(
+              Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   AppButton(
@@ -426,7 +415,10 @@ class Event02 extends StatelessWidget {
                     onTap: () {
                       Navigator.push(context,
                           MaterialPageRoute(builder: (context) {
-                        return const Event03();
+                        return PaymentMethods(
+                          eventData: widget.eventData,
+                          totalAmount: widget.totalAmount,
+                        );
                       }));
                     },
                   ),

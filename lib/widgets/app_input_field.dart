@@ -18,8 +18,8 @@ class AppInputField extends StatelessWidget {
   final int? maxLines;
   final TextInputAction textInputAction;
   final int? maxLength;
-  void Function(String)? onChanged;
-   AppInputField({
+ final void Function(String)? onChanged;
+ const  AppInputField({
     Key? key,
     required this.hintText,
     this.controller,
