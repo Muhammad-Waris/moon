@@ -57,6 +57,8 @@ class _HomeScreen1State extends State<HomeScreen1> {
     });
   }
 
+  final TextEditingController _comment = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     User? currentUser = FirebaseAuth.instance.currentUser;
@@ -194,7 +196,7 @@ class _HomeScreen1State extends State<HomeScreen1> {
                           final data = doc.data() as Map<String, dynamic>;
                           final image = data['image'] as String;
                           final text = data['text'] as String;
-
+                          final postId = doc.id;
                           return Column(
                             children: [
                               const SizedBox(
@@ -326,14 +328,97 @@ class _HomeScreen1State extends State<HomeScreen1> {
                               const SizedBox(
                                 height: 1,
                               ),
-                              const Row(
+                              Row(
                                 children: [
-                                  SizedBox(
+                                  const SizedBox(
                                     width: 20,
                                   ),
-                                  AppText(
-                                    text: "See all comments",
-                                    fontSize: 10,
+                                  Expanded(
+                                    child: ExpansionTile(
+                                      trailing: const Text(""),
+                                      title: const AppText(
+                                        text: "See all comments",
+                                        fontSize: 11,
+                                      ),
+                                      children: [
+                                        SizedBox(
+                                          height: 300,
+                                          width: double.infinity,
+                                          child: Column(
+                                            children: [
+                                              Expanded(
+                                                child: StreamBuilder<
+                                                    QuerySnapshot>(
+                                                  // Stream comments for this post from Firestore
+                                                  stream: FirebaseFirestore
+                                                      .instance
+                                                      .collection('posts')
+                                                      .doc(
+                                                          postId) // Use the correct post ID
+                                                      .collection('comments')
+                                                      .orderBy('timestamp',
+                                                          descending: true)
+                                                      .snapshots(),
+                                                  builder: (context, snapshot) {
+                                                    if (snapshot.hasData) {
+                                                      // Display existing comments
+                                                      final comments =
+                                                          snapshot.data!.docs;
+                                                      return ListView.builder(
+                                                        itemCount:
+                                                            comments.length,
+                                                        itemBuilder:
+                                                            (context, index) {
+                                                          final comment =
+                                                              comments[index][
+                                                                      'comment']
+                                                                  as String;
+                                                          return ListTile(
+                                                            title:
+                                                                Text(comment),
+                                                          );
+                                                        },
+                                                      );
+                                                    } else if (snapshot
+                                                        .hasError) {
+                                                      return Text(
+                                                          'Error: ${snapshot.error}');
+                                                    } else {
+                                                      return const CircularProgressIndicator();
+                                                    }
+                                                  },
+                                                ),
+                                              ),
+                                              AppInputField(
+                                                controller: _comment,
+                                                hintText: "Type comment here",
+                                                suffixIcon: GestureDetector(
+                                                  onTap: () {
+                                                    // Add the new comment to Firestore
+                                                    FirebaseFirestore.instance
+                                                        .collection('posts')
+                                                        .doc(
+                                                            postId) // Use the correct post ID
+                                                        .collection('comments')
+                                                        .add({
+                                                      'comment': _comment.text,
+                                                      'timestamp': FieldValue
+                                                          .serverTimestamp(),
+                                                    });
+
+                                                    _comment.clear();
+                                                  },
+                                                  child: const Icon(
+                                                    Icons.send,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               )
